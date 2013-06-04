@@ -33,26 +33,22 @@
 
 stsvm.cv <- function(x=x, x.mi=NULL,y=y, folds=5,Gsub=matrix(1,100,100),repeats=3, parallel = FALSE, cores=2,DEBUG=TRUE, pt.pvalue=0.05,op=0.85,pt.step=1000,a=1,p=2,allF=TRUE,seed=1234,Cs=10^c(-3:3))
 {
-	multicore <- ("package:multicore" %in% search())
+	multicore <- ("package:parallel" %in% search())
   
 	if(multicore == TRUE && parallel == TRUE)  
 	{
     
 		if(is.null(cores))       
-			cores <- multicore:::detectCores()    
-		options(cores = cores - 1)     
-		
-		cat("There's ", cores," cores detected, and ",getOption("cores")," will used\n")    
+			cores <- 2  	  		  
 		parallel <- TRUE  
 	}  
 	else  
 	{
-		if(parallel == TRUE)       
-		cat('You nedd Package \'multicore\'\n')
+		if(parallel == TRUE)       #
+		cat('You nedd Package \'parallel\'\n')
 		cat('Computation will performed sequential crossvalidation.\n', sep='')
 		parallel <- FALSE
 	}
-
  	n     <- length(y)
 	folds <- trunc(folds)
 

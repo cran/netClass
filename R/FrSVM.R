@@ -39,22 +39,19 @@
 
 FrSVM.cv <- function(x, y, folds=10,Gsub=matrix(1,100,100), repeats=5, parallel = TRUE, cores = 2, DEBUG=TRUE,d=0.85, top.uper=0.95,top.lower=0.9,seed=1234, Cs=10^c(-3:3))
 {
-	multicore <- ("package:multicore" %in% search())
+	multicore <- ("package:parallel" %in% search())
   
 	if(multicore == TRUE && parallel == TRUE)  
 	{
     
 		if(is.null(cores))       
-			cores <- multicore:::detectCores()    
-		options(cores = cores - 1)     
-		
-		cat("There's ", cores," cores detected, and ",getOption("cores")," will used\n")    
+			cores <- 2  	  		  
 		parallel <- TRUE  
 	}  
 	else  
 	{
-		if(parallel == TRUE)       
-		cat('You nedd Package \'multicore\'\n')
+		if(parallel == TRUE)       #
+		cat('You nedd Package \'parallel\'\n')
 		cat('Computation will performed sequential crossvalidation.\n', sep='')
 		parallel <- FALSE
 	}

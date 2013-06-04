@@ -17,7 +17,7 @@ classification which employed the prior information.
 Package: \tab netClass\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
-Date: \tab 2013-05-27\cr
+Date: \tab 2013-06-04\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

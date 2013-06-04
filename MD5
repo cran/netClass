@@ -1,11 +1,11 @@
-d63330214f7bbd8ba335d25ae75707a8 *DESCRIPTION
+a338ea765331c35696196ccf5dcc7e97 *DESCRIPTION
 ed21f29150466a4c2aa3545ce4f2211c *NAMESPACE
 5f6de80760235d770a0eba62d004ca40 *R.css
-8081c30d52be2afe694abbfc34039d49 *R/FrSVM.R
-a699b8ffa0efd4cabdc0dea17ed1ed87 *R/averageExpressionPathwaySVM.R
-02f184e06bd2e27c133faa7bdf770df5 *R/hubNetworkAnalysisCV.R
-4a40852baac1b27b038f17a9d87de23b *R/pacCV.R
-386ff2da02c00ed700b745d3efa688cc *R/stSVM.R
+b2b40a59073460021c0e166aacb380a4 *R/FrSVM.R
+682cdfe892f508b8ce29c0fb2727952c *R/averageExpressionPathwaySVM.R
+4222a6a6c70b0f661027b0bfcefac996 *R/hubNetworkAnalysisCV.R
+0cbee1242ff71e4fbbd7815c32492bf0 *R/pacCV.R
+3c00e664a0af01eaf82afa07208bb83c *R/stSVM.R
 d41d8cd98f00b204e9800998ecf8427e *R/zzz.R
 3ced14ac45b4f98f3217542559556e33 *data/Gs2.rda
 92287dbfb157e551aa03bf8fb7fc38be *data/ad.matrix.rda
@@ -25,7 +25,7 @@ ae39acc876a78e4bdef80a2db4eabe0b *man/expr.Rd
 705c52bedcd02c929b3c480430af7e9a *man/getGeneRanking.Rd
 399552645140bb0f8a1c60ccba626e66 *man/getGraphRank.Rd
 bc05032cd48aa33657160e0c74de38fd *man/hubc.cv.Rd
-075975335e23c1c9bdc1e12853651858 *man/netClass-package.Rd
+10c6eba913977078c33be920a08f978a *man/netClass-package.Rd
 7b6f939fe507373d11bd967db5eacda7 *man/pGeneRANK.Rd
 6d88fe8f3217e0bf7cf54fc1c7b97c5b *man/pOfHubs.Rd
 3b879c7f52e5d277534902678e6a3abe *man/pac.cv.Rd

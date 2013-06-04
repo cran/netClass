@@ -25,27 +25,22 @@
 
 pac.cv <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, Gsub=matrix(1,100,100), seed=1234)
 {
-	multicore <- ("package:multicore" %in% search())
-	#y[y == 1] = 1
-	#y[y == -1] = 0
-	  
+	multicore <- ("package:parallel" %in% search())
+  
 	if(multicore == TRUE && parallel == TRUE)  
 	{
     
 		if(is.null(cores))       
-			cores <- multicore:::detectCores()    
-		options(cores = cores - 1)     
-		
-		cat("There's ", cores," cores detected, and ",getOption("cores")," will used\n")    
+			cores <- 2  	  		  
 		parallel <- TRUE  
 	}  
 	else  
 	{
-		if(parallel == TRUE)       
-		cat('You nedd Package \'multicore\'\n')
+		if(parallel == TRUE)       #
+		cat('You nedd Package \'parallel\'\n')
 		cat('Computation will performed sequential crossvalidation.\n', sep='')
 		parallel <- FALSE
-	}	 	
+	}
 	
 	n     <- length(y)
 	folds <- trunc(folds)
