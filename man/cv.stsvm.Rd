@@ -1,5 +1,5 @@
-\name{stsvm.cv}
-\alias{stsvm.cv}
+\name{cv.stsvm}
+\alias{cv.stsvm}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Cross validation for smoothed t-statistic to select significant top ranked differential expressed genes
@@ -8,9 +8,9 @@ Cross validation for smoothed t-statistic to select significant top ranked diffe
 Cross validation for smoothed t-statistic to select significant top ranked differential expressed genes
 }
 \usage{
-stsvm.cv(x=x, x.mi=NULL,y=y, folds=5,Gsub=matrix(1,100,100),repeats=3, parallel=FALSE,
-	cores=2, DEBUG=TRUE, pt.pvalue = 0.05, op = 0.85, pt.step = 1000, a = 1, p=2,
-	allF=TRUE, seed=1234, Cs = 10^c(-3:3) )
+cv.stsvm(x=x, x.mi=NULL,y=y, folds=5,Gsub=matrix(1,100,100),op.method=c("pt","spb"), 
+		repeats=3, parallel=FALSE, cores=2,DEBUG=TRUE, pt.pvalue=0.05,op=0.85,
+		aa=1000,a=1,p=2,allF=TRUE, seed=1234,Cs=10^c(-3:3))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -29,6 +29,10 @@ Folds number of folds to perform
   \item{Gsub}{
 An adjacency matrix that represents the underlying biological network.
 }
+
+\item{op.method}{
+Method for selecet optimal feature subgoups: pt is permutation test, sp is span bound.
+}
   \item{repeats}{
 Number of how often to repeat the x-fold cross-validation
 }
@@ -45,10 +49,10 @@ Show debugging information in screen more or less.
 Cut off p-value of permutation test
 }
   \item{op}{
-Pptimal on top op% ranked genes
+Optimal on top op% ranked genes
 }
-  \item{pt.step}{
-permutation test steps
+  \item{aa}{
+permutation test steps for permutation test (pt); low bounds top op% ranked genes for span bound method (sp)
 }
   \item{a}{
 constant value of random walk kernel
@@ -80,8 +84,9 @@ a LIST for Cross-Validation results
 }
 
 \references{
-Yupeng Cun, Holger Frohlich (2013) Network and Data Integration for Biomarker Signature Disvovery via Network Smoothed T-Statistics
-}
+Yupeng Cun, Holger Frohlich (2013) Network and Data Integration for Biomarker 
+	Signature Discovery via Network Smoothed T-Statistics. PLoS ONE 8(9): e73074.
+	}
 \author{
 Yupeng Cun \email{yupeng.cun@gmail.com}
 }
@@ -101,13 +106,12 @@ data(ad.matrix)
 x <- expr$genes
 y <- expr$y
 
-r.stsvm <- stsvm.cv(x=x[,1:100],x.mi=NULL,y=y,folds=3,Gsub=ad.matrix,repeats=1, parallel=FALSE,
-			 cores=2,DEBUG=TRUE,pt.pvalue=0.05,op=0.9,pt.step=3,a=1,p=2,allF=TRUE,
-			 seed=1234,Cs=10^(-3:3))
+r.stsvm <- cv.stsvm(x=x[,1:500],x.mi=NULL,y=y,folds=3,Gsub=ad.matrix,op.method="pt",
+				repeats=1, parallel=FALSE, cores=2,DEBUG=TRUE,pt.pvalue=0.05,op=0.9,
+				aa=5,a=1,p=2,allF=TRUE, seed=1234,Cs=10^(-3:3))
 
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+
 \keyword{ stSVM }
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

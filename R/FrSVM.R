@@ -34,10 +34,10 @@
 #' y <- expr$y
 #' 
 #' 
-# r.frsvm <- FrSVM.cv(x=x, y, folds=5,Gsub=a.ppi, repeats=3, parallel = TRUE, cores = 2, DEBUG=TRUE,d=0.85,top.uper=0.95,top.lower=0.9,seed=1234,Cs=10^c((-3:3))
+# r.frsvm <- cv.frsvm(x=x, y, folds=5,Gsub=ad.matrix, repeats=3, parallel = FALSE, cores = 2, DEBUG=TRUE,d=0.85,top.uper=10,top.lower=50,seed=1234,Cs=10^c(-3:3))
 
 
-FrSVM.cv <- function(x, y, folds=10,Gsub=matrix(1,100,100), repeats=5, parallel = TRUE, cores = 2, DEBUG=TRUE,d=0.85, top.uper=0.95,top.lower=0.9,seed=1234, Cs=10^c(-3:3))
+cv.frsvm <- function(x, y, folds=10,Gsub=matrix(1,100,100), repeats=5, parallel = FALSE, cores = 2, DEBUG=FALSE,d=0.85, top.uper=10,top.lower=50,seed=1234, Cs=10^c(-3:3))
 {
 	multicore <- ("package:parallel" %in% search())
   
@@ -149,37 +149,43 @@ classify.frsvm <- function(fold, cuts, x, y, cv.repeat, DEBUG=DEBUG,Gsub=Gsub,d=
 	trn <- cuts[[fold]]$trn
 	tst <- cuts[[fold]]$tst		
 
-	label 	<- sign(as.numeric(y[tst]) - 1.5) # for computing the AUC
-	 	    	  	  
+	
+	train	<- train.frsvm(x=x[trn,], y=y[trn], DEBUG=DEBUG,Gsub=Gsub,d=d,op=op,aa=aa,Cs=Cs)	    	  	  
+	test	<- predictFrsvm(train=train, x=x[tst,], y=y[tst], DEBUG=DEBUG)
+	
+	auc		<- test$auc
+	feat	<- train$feat						
+	
+	if(DEBUG) cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")					
+	if(DEBUG) cat('Finished fold:',fold,'\n\n')
+
+	gc()	
+	res=list(fold=fold, model=train, auc=auc,feat= feat)
+		
+	return(res)
+}
+
+train.frsvm <- function(x=x, y=y, DEBUG=FALSE,Gsub=Gsub,d=0.85,op=10,aa=50,Cs=10^(-3:3))
+{		    	  	  
 	fits  <- list()
   	best.boundL <- list()
   	featL  <- list()
  
 	if(DEBUG) cat("Geting Gene Ranking \n")			
-	ranks = getGeneRanking(x=x[trn,], y=y[trn], Gsub=Gsub, d=d)	
-		
-	topRanks=ranks[which(ranks > quantile(ranks,aa))]
-	topRanks2=ranks[which(ranks > quantile(ranks,op))]		
-		
-	ranksI=sort(topRanks,decreasing=T)
+	ranks = getGeneRanking(x=x, y=y, Gsub=Gsub, d=d)			
+	
+	ranksI=sort(ranks,decreasing=T)
 	#nodesI=sort(topNodes,decreasing=T)
-	nn = length(ranksI)
-	nna =length(topRanks2)-1
-		
-	if(DEBUG)cat('selected features(max): ', nn,'\n')
-	if(DEBUG)cat('selected features(min): ', nna,'\n')
-		
-	i=1		
-	while(nn > nna)
+			
+	i=1
+	nn=aa		
+	while(nn > op)
 	{ 		  				  		
-			feat.rank = names(ranksI[1:nn])
-	  		#feat.node = names(topScorces)
-	  		#feat = intersect(feat.rank,feat.node)
+			feat.rank = names(ranksI[1:nn])	  	
 	  		feat = feat.rank
-	  		featL[[i]]= feat
-			xtt=x[trn,feat] 
+	  		featL[[i]] = feat			 
 		  	#print(length(feat))	
-	  		fit <- svm.fit(x=xtt, y=y[trn], Cs=Cs, scale="scale", DEBUG=FALSE) 	  		  
+	  		fit <- svm.fit(x=x[,feat], y=y, Cs=Cs, scale="scale", DEBUG=FALSE) 	  		  
 	  		fits[[i]]=fit	  		  		
 		    best.boundL[[i]] <-  fits[[i]]$error.bound  
 			nn=nn-3
@@ -192,22 +198,26 @@ classify.frsvm <- function(fold, cuts, x, y, cv.repeat, DEBUG=DEBUG,Gsub=Gsub,d=
 	best.index = which(best.boundLs==min(best.boundLs))		
 	n=length(best.index)						
 			
-	train   =	fits[[best.index[n]]]		
-	feat = featL[[n]]	
-	#train$w[feat]=train$w[feat]/rank(ranks[feat])
+	trained   =	fits[[best.index[n]]]		
+	feat = featL[[best.index[n]]]	
+	
+	trained$graph = graph.adjacency(Gsub[feat,feat], mode="undirected")	
+	
+	res=list(trained=trained, feat= feat)
 		
-	xts= x[tst,feat]				
-	test    <- svm.predict(fit=train, newdata=xts, type="response")
-	
-	## calculate the AUC					
-	auc	<- calc.auc(test, label)						
-	
-	if(DEBUG) cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")					
-	if(DEBUG) cat('Finished fold:',fold,'\n\n')
+	return(res)
+}
 
-	gc()	
-	res=list(fold=fold, model=train, auc=auc,feat= feat)
-		
+predictFrsvm <- function(train=train, x=x, y=y, DEBUG=FALSE)
+{
+	feat = train$feat	
+	xts= x[,feat]				
+	label 	<- sign(as.numeric(y) - 1.5) # for computing the AUC
+	test    <- svm.predict(fit=train$trained, newdata=xts, type="response")	
+	## calculate the AUC					
+	auc	<- calc.auc(test, label)							
+	#if(DEBUG) cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")				
+	res=list(auc=auc,pred=test)	
 	return(res)
 }
 

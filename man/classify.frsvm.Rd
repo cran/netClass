@@ -8,8 +8,8 @@ Training and predicting using FrSVM
 Training and predicting using FrSVM
 }
 \usage{
-classify.frsvm(fold, cuts, x, y, cv.repeat, DEBUG = DEBUG, Gsub = Gsub, d = d, op = op,
-				aa = aa, Cs = Cs)
+classify.frsvm(fold, cuts, x, y, cv.repeat, DEBUG = DEBUG, Gsub = Gsub, 
+				d = d, op = op,	aa = aa, Cs = Cs)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -72,12 +72,12 @@ Yupeng Cun \email{yupeng.cun@gmail.com}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See Also as {FrSVM.cv}
+See Also as cv.frsvm
 }
 \examples{
-#see \name{FrSVM.cv}
+#see cv.frsvm
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ FrSVM }
+\keyword{ frsvm }
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

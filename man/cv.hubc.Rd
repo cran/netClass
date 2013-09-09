@@ -1,5 +1,5 @@
-\name{hubc.cv}
-\alias{hubc.cv}
+\name{cv.hubc}
+\alias{cv.hubc}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Cross validation for hub nodes classification
@@ -9,8 +9,9 @@ Cross validation for hub nodes classification, which described in Taylor et al.(
 
 }
 \usage{
-hubc.cv(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, nperm=500,
-		node.ct=0.98, Gsub=matrix(1,100,100), Gs=Gs,seed=1234,Cs=10^c(-3:3))
+cv.hubc(x, y, folds = 10, repeats = 5, parallel = TRUE, cores  = NULL, 
+		DEBUG = TRUE, nperm = 500, node.ct = 0.98, Gsub = matrix(1, 100, 100), 
+		Gs = Gs, seed = 1234, Cs = 10^c(-3:3))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -44,8 +45,8 @@ cut off value for select highly quantile nodes in a nwtwork. Defaults to \code{0
   \item{Gsub}{
 an adjacency matrix that represents the underlying biological network.
 }
-  \item{Gs}{
-Undirected of graph with adjacency matrix Gsub.
+ \item{Gs}{
+ Undirected of graph with adjacency matrix Gsub.
 }
   \item{seed}{
 Seed for random sampling.
@@ -65,7 +66,8 @@ Soft-margin tuning parameter of the SVM. Defaults to \code{10^c(-3:3)}.
 %% ...
 }
 \references{
-Taylor et al.(2009)Dynamic modularity in protein interaction networks predicts breast cancer outcome, Nat. Biotech.: doi: 10.1038/nbt.1522
+Taylor et al.(2009)Dynamic modularity in protein interaction networks predicts 
+	breast cancer outcome, Nat. Biotech.: doi: 10.1038/nbt.1522
 }
 \author{
 Yupeng Cun \email{yupeng.cun@gmail.com}
@@ -80,14 +82,16 @@ Yupeng Cun \email{yupeng.cun@gmail.com}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
+ data(ad.matrix)
+ #data(Gs2)
  library(netClass)
  data(expr)
- data(Gs2)
- data(ad.matrix)
  x <- expr$genes
  y <- expr$y
-r.hubC <- hubc.cv(x=x, y=y, folds=3, repeats=1, parallel=FALSE, cores=2, DEBUG=TRUE,
-				nperm=2, Gsub=ad.matrix,Gs=Gs2,node.ct=0.6,Cs=10^(-3:3))
+
+
+# r.hubC <- cv.hubc(x=x, y=y, folds=3, repeats=1, parallel=FALSE, cores=2, DEBUG=TRUE,
+#				nperm=2, Gsub=ad.matrix,Gs=Gs2,node.ct=0.5,Cs=10^(-3:3))
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

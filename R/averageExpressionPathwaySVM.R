@@ -25,12 +25,9 @@
 #' y <- expr$y
 #'
 #' library(KEGG.db)
-#' r.aep <- aep.cv(x, y, folds=5, repeats=3, parallel=FALSE,cores=2,Gsub=ad.matrix,Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
+#' r.aep <- cv.aep(x, y, folds=5, repeats=3, parallel=FALSE,cores=2,Gsub=ad.matrix,Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
 
-
-
-
-aep.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, Gsub=matrix(1,100,100), Cs=10^(-3:3), seed=1234)
+cv.aep <- function(x, y, folds=10, repeats=5, parallel = FALSE, cores = 2, DEBUG=TRUE, Gsub=matrix(1,100,100), Cs=10^(-3:3), seed=1234)
 {
 	multicore <- ("package:parallel" %in% search())
   
@@ -99,8 +96,6 @@ aep.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEB
   
   	} 
   	
-  	cv <- sapply(cv.repeats, function(cv.repeat) rowSums(sapply(cv.repeat, function(model) model$cv)))  #
-	colnames(cv) <- paste("Repeat",1:repeats,sep="")
   	
   	auc <- sapply(cv.repeats, function(cv.repeat) sapply(cv.repeat, function(model) model$auc))  
   	colnames(auc) <- paste("Repeat",1:repeats,sep="")  
@@ -132,71 +127,82 @@ aep.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEB
 #-----------------------------  
 # Return a list with the results of the training model and predcit AUC   
 
-classify.aep <- function(fold, cuts, Cs, x, y, cv.repeat, int, DEBUG=DEBUG,  Gsub)
+classify.aep <- function(fold, cuts, Cs, x=x, y=y, cv.repeat, int=int, DEBUG=DEBUG,  Gsub=Gsub)
 {
 	gc()  	
 	if(DEBUG) cat('starting Fold:',fold,'\n')  
 	
 	trn <- cuts[[fold]]$trn
-	tst <- cuts[[fold]]$tst
+	tst <- cuts[[fold]]$tst	
+
+	train	<- train.aep(x=x[trn,], y=y[trn], DEBUG=DEBUG, int=int, Gsub=Gsub, Cs=Cs)
+	test	<- predictAep(train= train, x=x[tst,], y=y[tst], DEBUG=DEBUG,  Gsub=Gsub)
+		
+	auc	= test$auc
+	cv	= test$cv
+	genes = train$sig.genes
+	if(DEBUG)
+	{ cat(" Test AUC =", auc, "\n")
+		cat('Finished fold:',fold,'\n\n')
+	}
 	
-	## get training and test indices
-	label <- sign(as.numeric(y[tst]) - 1.5) # because y is a factor  
+	gc()
+	list(fold=fold, model=train, auc=auc, cv=cv,genes=train$sig.genes)
+}
+
+train.aep <- function(x=x, y=y, DEBUG=FALSE, int=int, Gsub=Gsub, Cs=10^(-3:3))
+{	
+	#if(is.null(int)) int= intersect(colnames(x), colnames(Gsub))
+	# select significant differential expressed genes
+	#x=x[,int]
+	#Gsub=Gsub[int,int]
+	sigGens= selecteGenes(x=x, y=y, DEBUG=DEBUG)
+	
+	if(DEBUG) cat("There are " ,length(sigGens), " DE genes selected\n")
+
+	# mean expression gene matrix of pathways
+	trainPath <- probeset2pathway(x=x[,sigGens], int=int, sigGens=sigGens)	
+	#print(ncol(trainPath))
+	if(is.null(ncol(trainPath)))
+	{
+		sigGens   <- int
+		trainPath  <- probeset2pathway(x=x[,sigGens], int=int,sigGens=sigGens)
+	}
+	
+	# train the matrix of pathways in L2-SVM
+	trained <- fit.aep( x=trainPath, y=y, DEBUG=DEBUG, scale="center", Cs=Cs)  
+	# calculate the AUC	
+	
+	#trained$graph = graph.adjacency(Gsub[sigGens,sigGens], mode="undirected")	
+	 
+	res=list(trained=trained,sig.genes=sigGens,int=int)
+	return(res)
+}
+
+predictAep <- function(train= train, x, y, DEBUG=FALSE,  Gsub=Gsub)
+{
+	label	<- sign(as.numeric(y) - 1.5) # because y is a factor  
 	cv      <- double(length=length(y))
 	
-	sigGens= selecteGenes(x=x[trn,], y=y[trn], DEBUG=DEBUG)
-	cat("There's " ,length(sigGens), " DE genes selected\n")
-	if(length(sigGens)<2)
-	{
-		trained=NULL
-		auc=0.5
-	}	
-	else
-	{
-		trainPath <- probeset2pathway(x=x[trn,sigGens], int=int,sigGens=sigGens)	
-		testPath  <- probeset2pathway(x=x[tst,sigGens], int=int,sigGens=sigGens)
-	
-		#cat("\n trainPath: ", dim(trainPath), "\n testPath: ", dim(testPath),"\n")
-
-		## train and test the model
-	
-	
-		trained <- fit.aep(fold, x=trainPath, y=y[trn], DEBUG=DEBUG, scale="center", Cs=Cs)
-	
-		if(length(trained$feature)==0)
-		{
-			auc = 0.0
-			cv[tst] <- label
-		}	
-		else
-		{
-			test    <- svm.predict(fit=trained$fit, newdata=testPath,type="response")#response	
-		
-			cv[tst] <- test
-		
-			cat("\n lable: ", label, "\n test: ", test,"\n")
-			auc   <- calc.auc(test, label)
-		}
-	}
-
-		## save the test indices
-		trained[["tst.indices"]] <- tst
-  
-	# calculate the AUC
-		
+	sigGens	= train$sig.genes
+	int		= train$int
+	#x=x[,int]
+	#Gsub=Gsub[int,int]
+	# mean expression gene matrix of pathway
+	testPath  <- probeset2pathway(x=x[,sigGens], int=int,sigGens=sigGens)	
+	#predict the test matrix of pathways
+	test    <- svm.predict(fit=train$trained$fit, newdata=testPath,type="response")#response		
+	#cat("\n lable: ", label, "\n test: ", test,"\n")
+	auc   <- calc.auc(test, label)	
 	
 	if(DEBUG) cat(" Test AUC =", auc, "\n")
 
 	
-
-	if(DEBUG) 
-		{cat('Finished fold:',fold,'\n\n')}
-	#else 
-		#{setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)}
-
-	gc()
-	list(fold=fold, model=trained, auc=auc, cv=cv,genes=sigGens)
+	res=list(auc=auc, pred=test)
+	return (res)
 }
+
+
 
 
 # Training trained fold using aepSVM methods
@@ -212,7 +218,7 @@ classify.aep <- function(fold, cuts, Cs, x, y, cv.repeat, int, DEBUG=DEBUG,  Gsu
 # Return a list with the results of the training model for predciting   
 
 
-fit.aep <- function(fold,x, y, DEBUG=FALSE, scale=c('center', 'scale'),Cs=10^c(-3:3))
+fit.aep <- function(x, y, DEBUG=FALSE, scale=c('center', 'scale'),Cs=10^c(-3:3))
 { 
 	best.bound = Inf
   

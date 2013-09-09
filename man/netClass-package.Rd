@@ -16,8 +16,8 @@ classification which employed the prior information.
 \tabular{ll}{
 Package: \tab netClass\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2013-06-04\cr
+Version: \tab 1.2\cr
+Date: \tab 2013-09-09\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
@@ -31,9 +31,10 @@ Maintainer: Yupeng Cun <yupeng.cun@gmail.com>
 
 }
 \references{
-Yupeng Cun, Holger Frohlich (2013) Network and Data Integration for Biomarker Signature Disvovery via Network Smoothed T-Statistics
+Yupeng Cun, Holger Frohlich (2013) netClass: An R-package for network based, integrative biomarker signature discovery.
+
 }
-%\keyword{ biomarker discovery, microarray classification, interaction network }
+\keyword{ biomarker discovery, microarray classification, interaction network }
 %\seealso{
 %%~~ Optional links to other man pages, e.g. ~~
 %}

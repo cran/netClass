@@ -1,56 +1,44 @@
-\name{classify.aep}
-\alias{classify.aep}
+\name{train.aep}
+\alias{train.aep}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Training and predicting using aepSVM (aepSVM) classification methods
+Training the data using aep methods
 }
 \description{
-Training and predicting using aepSVM (aepSVM) classification methods
+Training the data using aep methods
 }
 \usage{
-classify.aep(fold, cuts, Cs, x, y, cv.repeat, int, DEBUG = DEBUG, Gsub)
+train.aep(x = x, y = y, DEBUG = FALSE, int = int, Gsub = Gsub, Cs = 10^(-3:3))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{fold}{
-number of -folds cross validation (CV)
-}
-  \item{cuts}{
-list for randomly divide the training set in to x-x-folds CV
-}
-
-  \item{Cs}{
-soft-margin tuning parameter of the SVM. Defaults to \code{10^c(-3:3)}.
-}
   \item{x}{
-gene expression data
+expression data for training
 }
   \item{y}{
-class labels
-}
-
-  \item{cv.repeat}{
-model for one CV training and predicting
-}
-  \item{int}{
-Intersect of genes in network and gene expression profile. 
+a factor of length p comprising the class labels.
 }
   \item{DEBUG}{
 show debugging information in screen more or less.
 }
-
+  \item{int}{
+Intersect of genes in network and gene expression profile. 
+}
   \item{Gsub}{
  an adjacency matrix that represents the underlying biological network.
+}
+  \item{Cs}{
+soft-margin tuning parameter of the SVM. Defaults to \code{10^c(-3:3)}.
 }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-\item{fold }{the recored for test fold}
-\item{auc }{The AUC values of test fold}
-\item{train }{The tranined models for traning folds}
-\item{feat }{The feature selected by each by the train}
+ The returned lists
+\item{trained }{The tranined models for traning folds}
+\item{sig.genes }{The differential expressed feature}
+%% ...
 }
 \references{
 Guo et al., Towards precise classification of cancers based on robust gene functional expression profiles. BMC Bioinformatics 2005, 6:58. 
@@ -68,9 +56,10 @@ Guo et al., Towards precise classification of cancers based on robust gene funct
 See Also as cv.aep
 }
 \examples{
-#See cv.aep
+#see cv.aep
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ aep }
-%%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

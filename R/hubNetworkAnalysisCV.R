@@ -20,13 +20,13 @@
 #' @examples
 #' library(netClass)
 #' data(expr)
-#' data(Gs2)
 #' data(ad.matrix)
+#' Gs = graph.adjacency(ad.matrix[1:1000,1:1000], mode="undirected")
 #' x <- expr$genes
 #' y <- expr$y
-#' r.hubC <- hubc.cv(x=x, y=y, folds=10, repeats=3, parallel = TRUE, cores = 4, DEBUG=TRUE,nperm=1000,Gsub=ad.matrix,Gs=Gs2,node.ct=0.95,Cs=10^(-3:3))
+#' r.hubC <- cv.hubc(x=x, y=y, folds=10, repeats=3, parallel = TRUE, cores = 4, DEBUG=TRUE,nperm=1000,Gsub=ad.matrix,Gs=Gs2,node.ct=0.95,Cs=10^(-3:3))
 
-hubc.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, nperm=500,  node.ct=0.98, Gsub=matrix(1,100,100), Gs=Gs,seed=1234,Cs=10^c(-3:3))
+cv.hubc <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, nperm=500,  node.ct=0.98, Gsub=matrix(1,100,100), Gs=Gs,seed=1234,Cs=10^c(-3:3))
 {
 	multicore <- ("package:parallel" %in% search())
   
@@ -61,14 +61,14 @@ hubc.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DE
 	hubs <- which(colSums(Gsub) > quantile(colSums(Gsub), node.ct))
 	degM <- Gsub[hubs,hubs]
 	#hubs <- colnames(degM)
-	print(hubs)
+	#print(hubs)
 	
 	int = intersect(colnames(Gsub), colnames(degM))
 	hubs = intersect(hubs, colnames(x))
 	#x=x[,int]	
 	#Gsub = Gsub[int,int]
 	gHub = subGraph(hubs,Gs)
-	print(hubs)
+	#print(hubs)
 	
 	nHub = length(hubs)
 	  
@@ -92,8 +92,8 @@ hubc.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DE
     
 		if(DEBUG) cat('Starting classification of repeat:',r,'\n')
     
-		if(parallel)	repeat.models <- mclapply(1:folds, r=r, classify.hubc, cuts=cuts, x=x, y=y, cv.repeat=r, DEBUG=DEBUG,gHub=gHub, hubs=hubs, nperm=nperm,node.ct=node.ct,Cs=Cs)
-		else		repeat.models <-   lapply(1:folds,r=r, classify.hubc, cuts=cuts, x=x, y=y, cv.repeat=r, DEBUG=DEBUG,gHub=gHub, hubs=hubs, nperm=nperm,node.ct=node.ct,Cs=Cs)
+		if(parallel)	repeat.models <- mclapply(1:folds, r=r, classify.hubc, cuts=cuts, x=x, y=y, cv.repeat=r, Gsub=Gsub,DEBUG=DEBUG,gHub=gHub, hubs=hubs, nperm=nperm,node.ct=node.ct,Cs=Cs)
+		else		repeat.models <-   lapply(1:folds,r=r, classify.hubc, cuts=cuts, x=x, y=y, cv.repeat=r, Gsub=Gsub,DEBUG=DEBUG,gHub=gHub, hubs=hubs, nperm=nperm,node.ct=node.ct,Cs=Cs)
 	
 		#close(pb)
     
@@ -141,7 +141,7 @@ hubc.cv <- function(x, y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DE
 # Return a list with the results of the training model and predcit AUC   
 
 
-classify.hubc <- function(fold, r, cuts, x, y, cv.repeat, DEBUG=DEBUG, gHub=gHub, hubs=hubs,nperm=nperm,node.ct=node.ct,Cs=Cs)
+classify.hubc <- function(fold, r, cuts, x, y, cv.repeat,Gsub=Gsub, DEBUG=DEBUG, gHub=gHub, hubs=hubs,nperm=nperm,node.ct=node.ct,Cs=Cs)
 {
 	gc()  
 	
@@ -151,47 +151,57 @@ classify.hubc <- function(fold, r, cuts, x, y, cv.repeat, DEBUG=DEBUG, gHub=gHub
 	trn <- cuts[[fold]]$trn
 	tst <- cuts[[fold]]$tst
 
-	## train and test the model
-	xTr=x[trn,]
-	yTr=y[trn]
-	cat("\nlength(hubs):",length(hubs),"\n")
-	p_hub <- pOfHubs(x=xTr,y=yTr, gHub=gHub, hubs=hubs, nperm=nperm)	
-	index = p_hub$hub[which(p_hub$pVal < 0.5)]		
-	if(length(index) <=1)
-	{
-	  tt=p_hub$pVal
-	  names(tt)=p_hub$hub
-	  tnodes = p_hub$hub[which( tt > quantile(tt, node.ct))]
-	  index=  p_hub$hub[which(p_hub$hub %in% tnodes)]	
+	train	<- train.hubc(x=x[trn,], y=y[trn], DEBUG=DEBUG, Gsub=Gsub, gHub=gHub, hubs=hubs,nperm=nperm,node.ct=node.ct,Cs=Cs)	    	  	  
+	test	<- predictHubc(train=train, x=x[tst,], y=y[tst], DEBUG=DEBUG)
+	
+	auc		<- test$auc
+	feat	<- train$feat						
+	
+	if(DEBUG) cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")					
+	if(DEBUG) cat('Finished fold:',fold,'\n\n')
 
-	}
+	gc()	
+	res=list(fold=fold, model=train, auc=auc,feat= feat)
+		
+	return(res)
+}
+
+train.hubc <- function(x=x, y=y, DEBUG=FALSE, Gsub=Gsub, gHub=gHub, hubs=hubs,nperm=500,node.ct=0.95,Cs=10^(-3:3))
+{
 	
+	if(DEBUG)cat("\nlength(hubs):",length(hubs),"\n")
+	p_hub <- pOfHubs(x=x,y=y, gHub=gHub, hubs=hubs, nperm=nperm)	
+	index = p_hub$hub[which(p_hub$pVal < 0.5)]		
+	#if(length(index) <=1)
+	#{
+	#  tt=p_hub$pVal
+	#  names(tt)=p_hub$hub
+	#  tnodes = p_hub$hub[which( tt > quantile(tt, node.ct))]
+	#  index=  p_hub$hub[which(p_hub$hub %in% tnodes)]
+	#}
 	
-	trained <- fit.pe(x=x[trn,index],y= y[trn], DEBUG=DEBUG, scale="center", Cs=Cs)  
-	test    <- svm.predict(fit=trained$fit, newdata=x[tst,index],type="response")
-	feat=colnames(x[trn,index])
+	if(length(index)>=1) feat = index
+	if(length(index)<1)	feat=hubs
+	trained <- fit.pe(x=x[,feat],y= y, DEBUG=DEBUG, scale="center", Cs=Cs)  
+	feat=colnames(x[,feat])
 	## save the test indices
-	trained[["tst.indices"]] <- tst
+	##trained$graph = graph.adjacency(Gsub[feat,feat], mode="undirected")	
+		
+	res=list(trained=trained, feat= feat)		
+	return(res)
+}
+
+predictHubc <- function(train=train, x=x, y=y,DEBUG=FALSE)
+{
+	feat = train$feat				
+	label 	<- sign(as.numeric(y) - 1.5) # for computing the AUC  
+	test    <- svm.predict(fit=train$trained$fit, newdata=x,type="response")
 	
-	
-  	  
-	## calculate the AUC
-	label <- sign(as.numeric(y[tst]) - 1.5) # because y is a factor
 	auc   <- calc.auc(test, label)
 	
-	feature=colnames(x[trn,index])
-	if(DEBUG) cat(" Test AUC =", auc, "\n")
-
-	cv      <- double(length=length(y))
-	cv[tst] <- test
-
-	if(DEBUG) 
-		{cat('Finished fold:',fold,'\n\n')}
-	#else 
-	#	{setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)}
-
-	#gc()
-	list(fold=fold, model=feature, auc=auc, feat=feat,cv=cv)
+	if(DEBUG) cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")				
+	res=list(auc=auc,pred=test)	
+	return(res)
 }
 
 ##################################

@@ -1,5 +1,5 @@
-\name{aep.cv}
-\alias{aep.cv}
+\name{cv.aep}
+\alias{cv.aep}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Cross validation for aepSVM (aepSVM)
@@ -8,8 +8,9 @@ Cross validation for aepSVM (aepSVM)
 Cross validation for aepSVM (aepSVM) using SAM to select significant differential expressed genes
 }
 \usage{
-aep.cv(x, y, folds = 10, repeats = 5, parallel = TRUE, cores = NULL, DEBUG = TRUE,
-		Gsub =matrix(1,100,100), Cs = 10^(-3:3), seed = 1234)
+cv.aep(x, y, folds = 10, repeats = 5, parallel = FALSE, cores
+                 = 2, DEBUG = TRUE, Gsub = matrix(1, 100, 100), 
+                 Cs = 10^(-3:3), seed = 1234)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -70,9 +71,9 @@ Guo et al., Towards precise classification of cancers based on robust gene funct
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
- See Also as \code{aep.cv}
-}
+%\seealso{
+%% See Also as \code{cv.aep}
+%}
 \examples{
 library(netClass)
 data(expr)
@@ -81,8 +82,8 @@ x <- expr$genes
 y <- expr$y
 
  library(KEGG.db)
-r.aep <- aep.cv(x[,1:200], y, folds=3, repeats=1, parallel=FALSE,cores=2,Gsub=ad.matrix,
-				Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
+r.aep <- cv.aep(x[,1:500], y, folds=3, repeats=1, parallel=FALSE,cores=2,
+			Gsub=ad.matrix,	Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

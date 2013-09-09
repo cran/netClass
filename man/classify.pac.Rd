@@ -8,7 +8,7 @@ Training and predicting using PAC classification methods
 Training and predicting using PAC classification methods
 }
 \usage{
-classify.pac(fold, cuts, x, y, cv.repeat, int, DEBUG = FALSE)
+classify.pac(fold, cuts, x, y, cv.repeat, Gsub, int, DEBUG = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,6 +19,9 @@ number of -folds cross validation (CV)
 list for randomly divide the training set in to x-x-folds CV
 }
 
+  \item{Gsub}{
+ an adjacency matrix that represents the underlying biological network.
+}
   \item{x}{
 gene expression data
 }
@@ -58,10 +61,10 @@ Yupeng Cun \email{yupeng.cun@gmail.com}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See Also as {pac.cv}
+See Also as cv.pac
 }
 \examples{
-#see \name{FrSVM.cv}
+#see cv.pac
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

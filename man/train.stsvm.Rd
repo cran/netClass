@@ -1,43 +1,23 @@
-\name{classify.stsvm}
-\alias{classify.stsvm}
+\name{train.stsvm}
+\alias{train.stsvm}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Training and predicting using stSVM classification methods
+Training the data using stsvm methods
 }
 \description{
-Training and predicting using stSVM classification methods
+Training the data using stsvm methods
 }
 \usage{
-classify.stsvm(fold, cuts, ex.sum, x, p, a, y, cv.repeat, DEBUG = DEBUG, 
-				Gsub=Gsub,  op.method=op.method, op = op, aa = aa, 
-				dk = dk, dk.tf = dk.tf, seed = seed, Cs = Cs)
+train.stsvm(x=x, y=y, DEBUG=FALSE,Gsub=Gsub, op.method="sp", op=10,aa=100,
+			dk=dk, dk.tf=0.05,seed = 1234,Cs=10^(-3:3),EN2SY=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{fold}{
-number of folds to perform
-}
-  \item{cuts}{
-list for randomly divide the training set in to x-x-folds CV
-}
-
-  \item{ex.sum}{
-expression data 
-}
   \item{x}{
-expression data 
-}
-  \item{a}{
-constant value of random walk kernel
-}
-  \item{p}{
-random walk step(s) of random walk kernel
+expression data for training
 }
   \item{y}{
-a factor of length p comprising the class labels.
-}
-  \item{cv.repeat}{
-model for one CV training and predicting
+Class labels
 }
   \item{DEBUG}{
 show debugging information in screen more or less.
@@ -66,24 +46,24 @@ seed for random sampling.
   \item{Cs}{
 Soft-margin tuning parameter of the SVM. Defaults to \code{10^c(-3:3)}.
 }
+ \item{EN2SY}{
+A list for mapping gene sybol ids or entez ids.
+}
+
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-%%  ~Describe the value returned
+The list returned
 %%  If it is a LIST, use
-\item{fold }{the recored for test fold}
-\item{auc }{The AUC values of test fold}
-\item{train }{The tranined models for traning folds}
+\item{trained }{The tranined models for traning folds}
 \item{feat }{The feature selected by each by the train }
 %% ...
 }
-\references{
-Yupeng Cun, Holger Frohlich (2013) Network and Data Integration for Biomarker 
-	Signature Discovery via Network Smoothed T-Statistics. 
-	PLoS ONE 8(9): e73074. doi:10.1371/journal.pone.0073074
-}
+%\references{
+%% ~put references to the literature/web site here ~
+%}
 \author{
 Yupeng Cun \email{yupeng.cun@gmail.com}
 }
@@ -95,7 +75,7 @@ Yupeng Cun \email{yupeng.cun@gmail.com}
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-see cv.stsvm
+See cv.stsvm
 }
 \examples{
 #see cv.stsvm

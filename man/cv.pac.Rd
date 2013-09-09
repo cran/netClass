@@ -1,15 +1,17 @@
-\name{pac.cv}
-\alias{pac.cv}
+\name{cv.pac}
+\alias{cv.pac}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Cross validation for Pathway Activities Classification(PAC)
 }
 \description{
-Cross validation for Pathway Activities Classification(PAC) using Logistic regression model for classification. Implementation of the Pathway Activities Classification  aepSVM) by CROG algorithm.
+Cross validation for Pathway Activities Classification(PAC) using Logistic regression 
+model for classification. Implementation of the Pathway Activities Classification  
+by CROG algorithm.
 }
 \usage{
-pac.cv(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, 
-		Gsub=matrix(1,100,100), seed=1234)
+cv.pac(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL, 
+		DEBUG=TRUE, Gsub=matrix(1,100,100), seed=1234)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -54,7 +56,7 @@ a LIST for Cross-Validation results
 
 }
 \references{
-Lee E, Chuang H-Y, Kim J-W, Ideker T, Lee D (2008) Inferring Pathway Activity toward Precise Disease Classification. PLoS Comput Biol 4(11): e1000217. doi:10.1371/journal.pcbi.1000217
+Lee E, Chuang H-Y, Kim J-W, Ideker T, Lee D (2008) Inferring Pathway Activity toward Precise Disease Classification. PLoS Comput Biol 4(11): e1000217. 
 }
 \author{
 Yupeng Cun \email{yupeng.cun@gmail.com}
@@ -77,7 +79,7 @@ x <- expr$genes
 y <- expr$y
 
 library(KEGG.db)
-r.pac <- pac.cv(x=x, y=y, folds=3, repeats=1, parallel=FALSE, cores=2, DEBUG=TRUE,
+r.pac <- cv.pac(x=x, y=y, folds=3, repeats=1, parallel=FALSE, cores=2, DEBUG=TRUE,
 				Gsub=ad.matrix,seed=1234)
 
 }

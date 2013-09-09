@@ -21,9 +21,9 @@
 #' x <- expr$genes
 #' y <- expr$y
 #'
-#' r.pac <- pac.cv(x=x, y=y, folds=10, repeats=10, parallel = FALSE, cores = 4, DEBUG=TRUE, Gsub=ad.matrix)
+#' r.pac <- cv.pac(x=x, y=y, folds=10, repeats=10, parallel = FALSE, cores = 4, DEBUG=TRUE, Gsub=ad.matrix)
 
-pac.cv <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, Gsub=matrix(1,100,100), seed=1234)
+cv.pac <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL, DEBUG=TRUE, Gsub=matrix(1,100,100), seed=1234)
 {
 	multicore <- ("package:parallel" %in% search())
   
@@ -70,8 +70,8 @@ pac.cv <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL,
     
 		if(DEBUG) cat('Starting classification of repeat:',r,'\n')
     
-		if(parallel)	repeat.models <- mclapply(1:folds, classify.pac, cuts=cuts,x=x, y=y, cv.repeat=r, int=int,DEBUG=DEBUG)
-		else		repeat.models <-   lapply(1:folds, classify.pac, cuts=cuts, x=x, y=y, cv.repeat=r,int=int, DEBUG=DEBUG)
+		if(parallel)	repeat.models <- mclapply(1:folds, classify.pac, Gsub=Gsub, cuts=cuts,x=x, y=y, cv.repeat=r, int=int,DEBUG=DEBUG)
+		else		repeat.models <-   lapply(1:folds, classify.pac, Gsub=Gsub,cuts=cuts, x=x, y=y, cv.repeat=r,int=int, DEBUG=DEBUG)
 	
 		#close(pb)
     
@@ -84,10 +84,8 @@ pac.cv <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL,
     
 		cv.repeats[[r]] <- repeat.models
   
-  	} 
+  	} 	
   	
-  	cv <- sapply(cv.repeats, function(cv.repeat) rowSums(sapply(cv.repeat, function(model) model$cv)))  
-  	colnames(cv) <- paste("Repeat",1:repeats,sep="")  
   	
   	auc <- sapply(cv.repeats, function(cv.repeat) sapply(cv.repeat, function(model) model$auc))  
   	colnames(auc) <- paste("Repeat",1:repeats,sep="")  
@@ -119,7 +117,7 @@ pac.cv <- function(x=x, y=y, folds=10, repeats=5, parallel = TRUE, cores = NULL,
 # Return a list with the results of the training model and predcit AUC   
 
 
-classify.pac <- function(fold, cuts, x, y, cv.repeat,int, DEBUG=FALSE)
+classify.pac <- function(fold, cuts, x, y, cv.repeat,Gsub=Gsub,int, DEBUG=FALSE)
 {
 	gc()  	
 	if(DEBUG) cat('starting Fold:',fold,'\n')
@@ -128,51 +126,61 @@ classify.pac <- function(fold, cuts, x, y, cv.repeat,int, DEBUG=FALSE)
 	trn <- cuts[[fold]]$trn
 	tst <- cuts[[fold]]$tst	
 	
+	train	<- train.pac(x=x[trn,], y=y[trn], int=int, DEBUG=DEBUG,Gsub=Gsub)	    	  	  
+	test	<- predictPac(train=train,x=x[tst,], y=y[tst],int=int, DEBUG=DEBUG)
+	
+	auc		<- test$auc
+	feat	<- train$crog						
+	
+	if(DEBUG) 
+	{
+		cat("=> the best AUC   is ", auc, "\t Best features length:  ", length(feat),"\n")					
+		cat('Finished fold:',fold,'\n\n')
+	}
+
+	gc()	
+	res=list(fold=fold, model=train, auc=auc,feat= feat)
+		
+	return(res)
+}
+
+
+train.pac <- function(x=x, y=y, int=int, DEBUG=FALSE,Gsub=Gsub)
+{	
 	yy=sign(as.numeric(y))
 	yy[yy==-1]=0
 	
-	apTrain<-probeset2pathwayTrain(x=x[trn,],y=y[trn], int=int)
-	apTest=probeset2pathwayTst(x=x[tst,],apTrain=apTrain)	
+	apTrain<-probeset2pathwayTrain(x=x,y=y, int=int)		
+	mydata = data.frame(ap=apTrain$ap,yy=yy)		
+	trained <- glm(yy ~ . , family="binomial",data=mydata, control = list(maxit = 1000))			
 	
-	mydata = data.frame(ap=apTrain$ap,yy=yy[trn])
-	mydata1 = data.frame(ap=apTest)
-	#mydata = data.frame(x=ap[tst,], y= y[tst])
-	cat("\n mydata done!")	
-	trained<- glm(yy ~ . , family="binomial",data=mydata)	#cat("\t\t train done!")
-	test    <-  predict(trained, newdata=mydata1, type="response") #response , #cat("\t\t test done!\n")
-	## save the test indices
-	trained[["tst.indices"]] <- tst	
-	nn=length(tst)
-  
-	## calculate the AUC
-	#label <- y[tst]
-	label <- sign(as.numeric(y[tst]) - 1.5) # because y is a factor
-	cat("\n test:", test,"\n label", label,"\n y[tst]:", y[tst],"\n")	
-	pred=test-1.5
-	auc   <- calc.auc(pred,label)
+	trained$feat=apTrain$pathways.selected
+	trained$crog=apTrain$selectedGenes	
 	
-	if(DEBUG) cat("\n=================================\n Test AUC =", calc.auc(pred,label), "\n")
-	cat("calc.auc(pred, label)", calc.auc(test, label),"\n")
-	cat("calc.auc(sign(test-0.5), label)", calc.auc(test, label),"\n=================================\n")
-
-	cv      <- double(length=length(y))
-	cv[tst] <- test
-
-	if(DEBUG) 
-		{cat('Finished fold:',fold,'\n\n')}
-	#else 
-	#	{setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)}
-
-		
-	fit=trained$coefficients
-	feat=apTrain$pathways.selected
-	crog=apTrain$selectedGenes
-	fits=list(fit=fit, featutres=feat, tst.indices=tst, crog=crog)
+	trained$graph = graph.adjacency(Gsub[trained$crog,trained$crog], mode="undirected")
 	
-	results=list(fold=fold, model=fits, auc=auc, feat=feat,cv=cv)#	list(fold=fold, model=trained, auc=auc, cv=cv)
-	return (results)
+	res =list(trained=trained,apTrain=apTrain)
+	return (res)
 }
 
+
+predictPac <- function(train=train,x=x, y=y,int=int, DEBUG=FALSE)
+{	
+	apTrain<-train$apTrain
+	apTest=probeset2pathwayTst(x=x,apTrain=apTrain)	
+	
+	mydata1 = data.frame(ap=apTest)
+	trained<-train$trained
+	test    <-  predict(trained, newdata=mydata1, type="response") #response , #cat("\t\t test done!\n")
+	
+	label <- sign(as.numeric(y) - 1.5) # because y is a factor
+	nn=length(y)	
+	pred=test-1.5
+	auc   <- calc.auc(pred,label)
+		
+	res=list(auc=auc,pred=test)	
+	return(res)
+}
 
 ######
 ## sum the graph set with same pathway

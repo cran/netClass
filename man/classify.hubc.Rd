@@ -8,8 +8,10 @@
  Training and predicting using hub nodes classification methods
 }
 \usage{
-classify.hubc(fold, r, cuts, x, y, cv.repeat, DEBUG = DEBUG, gHub = gHub, hubs = hubs,
-				nperm = nperm, node.ct = node.ct, Cs = Cs)
+classify.hubc(fold, r, cuts, x, y, cv.repeat, Gsub = Gsub, DEBUG =
+                 DEBUG, gHub = gHub, hubs = hubs, nperm = nperm,
+                 node.ct = node.ct, Cs = Cs)
+
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,7 +22,9 @@ number of -fold cross validation (CV)
   \item{cuts}{
 list for randomly divide the training set in to x-x-fold CV
 }
-
+  \item{Gsub}{
+ an adjacency matrix that represents the underlying biological network.
+ }
   \item{x}{
 gene expression data.
 }
@@ -63,7 +67,8 @@ Soft-margin tuning parameter of the SVM. Defaults to \code{10^c(-3:3)}.
 \item{feat }{The feature selected by each by the train}
 }
 \references{
-Taylor et al.(2009)Dynamic modularity in protein interaction networks predicts breast cancer outcome, Nat. Biotech.: doi: 10.1038/nbt.1522
+Taylor et al.(2009)Dynamic modularity in protein interaction networks predicts breast 
+	cancer outcome, Nat. Biotech.: doi: 10.1038/nbt.1522
 }
 \author{
 Yupeng Cun \email{yupeng.cun@gmail.com}
@@ -74,11 +79,12 @@ Yupeng Cun \email{yupeng.cun@gmail.com}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-%\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-%}
-%\examples{
-%}
+\seealso{
+See cv.hubc
+}
+\examples{
+#See cv.hubc
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ hubc }
