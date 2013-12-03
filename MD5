@@ -1,4 +1,4 @@
-77b698e22601de14051148849373acc2 *DESCRIPTION
+03bbc57cef67dddb4ae24283f4ae8d70 *DESCRIPTION
 97176f0f4f4c16252027c78bea42ad5a *NAMESPACE
 a2fb4b99a7fc9f24f713e98e44675336 *R/FrSVM.R
 29abc2126863c165d944d633c97dda70 *R/averageExpressionPathwaySVM.R
@@ -19,7 +19,7 @@ c46f226a151e6e856d008c9d0e54ea84 *man/classify.frsvm.Rd
 9a95b9780e3546f1ec7b7a5089b96871 *man/classify.hubc.Rd
 8e79a12bcef8fcc188224af94a849ee1 *man/classify.pac.Rd
 fa97ec4cc4256165191458fb5278cd49 *man/classify.stsvm.Rd
-fa2c5b78386dd589c4c02f096be19424 *man/cv.aep.Rd
+ea5c50446026a646188fa61ef1a06eba *man/cv.aep.Rd
 e189034cb363948f512762969c7bfddf *man/cv.frsvm.Rd
 6d16f312dd3399ae62da3dc1261eaaba *man/cv.hubc.Rd
 62543c8b571d0943b4a2bafcf960db7f *man/cv.pac.Rd
@@ -43,3 +43,4 @@ f2270f2d59a066021deb3614adb5fbe4 *man/train.frsvm.Rd
 40052ca902af06c725da835ce6c346ca *man/train.hubc.Rd
 96d4037b4e1ec5d56427cd86aa6853b9 *man/train.pac.Rd
 dd3bee4f676d91c2f5120860ae97dd0c *man/train.stsvm.Rd
+91111d181bac361398c697a905e166b1 *vignettes/Vignettes.pdf

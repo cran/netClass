@@ -82,8 +82,8 @@ x <- expr$genes
 y <- expr$y
 
  library(KEGG.db)
-r.aep <- cv.aep(x[,1:500], y, folds=3, repeats=1, parallel=FALSE,cores=2,
-			Gsub=ad.matrix,	Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
+#r.aep <- cv.aep(x[,1:500], y, folds=3, repeats=1, parallel=FALSE,cores=2,
+#			Gsub=ad.matrix,	Cs=10^(-3:3),seed=1234,DEBUG=TRUE)
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

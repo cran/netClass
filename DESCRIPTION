@@ -1,6 +1,6 @@
 Package: netClass
-Version: 1.2
-Date: 2013-09-09
+Version: 1.2.1
+Date: 2013-12-03
 Title: netClass: An R Package for Network-Based Biomarker Discovery
 Author: Yupeng Cun
 Maintainer: Yupeng Cun <yupeng.cun@gmail.com>
@@ -17,7 +17,7 @@ Imports: AnnotationDbi, Matrix, ROCR, graph, igraph, samr
 Suggests: parallel, Biobase, KEGG.db, pathClass
 License: GPL (>= 2)
 LazyLoad: yes
-Packaged: 2013-09-18 08:23:09 UTC; ycun
+Packaged: 2013-12-03 21:27:02 UTC; cun
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-09-18 12:36:33
+Date/Publication: 2013-12-03 22:44:46
